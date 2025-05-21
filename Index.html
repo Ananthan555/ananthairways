@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GCD Airways - Flight Booking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #f4f8fb;
+      font-family: 'Quicksand', Arial, sans-serif;
+    }
+    .center-viewport {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .auth-card {
+      border-radius: 2rem;
+      box-shadow: 0 6px 32px 0 rgba(0,0,0,0.09);
+      padding: 2.5rem 2rem 2rem 2rem;
+      max-width: 370px;
+      width: 100%;
+      background: #fff;
+      margin: auto;
+      animation: fadeIn 1s;
+    }
+    .auth-card h3 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #1565c0;
+    }
+    .navbar-brand {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+    }
+    .navbar-nav .nav-link {
+      color: #fff !important;
+      font-weight: 500;
+      font-size: 1.1rem;
+      margin-right: 0.5rem;
+      transition: color 0.2s;
+    }
+    .navbar-nav .nav-link.active {
+      color: #ffd600 !important;
+      font-weight: bold;
+      border-bottom: 2px solid #ffd600;
+      background: rgba(21,101,192,0.1);
+      border-radius: 0.4rem 0.4rem 0 0;
+    }
+    .section {
+      display: none;
+      animation: fadeIn 0.7s;
+    }
+    .section.active {
+      display: block;
+    }
+    .home-cards-row {
+      gap: 1.2rem;
+      margin-bottom: 2.2rem;
+    }
+    .service-card {
+      border-radius: 1.5rem;
+      overflow: hidden;
+      box-shadow: 0 4px 24px 0 rgba(21,101,192,0.07);
+      transition: transform .3s, box-shadow .3s;
+      background: #fff;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      cursor: pointer;
+    }
+    .service-card:hover {
+      transform: translateY(-8px) scale(1.04);
+      box-shadow: 0 12px 32px 0 rgba(21,101,192,0.13);
+    }
+    .service-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-top-left-radius: 1.5rem;
+      border-top-right-radius: 1.5rem;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      opacity: 0.92;
+    }
+    .service-card .card-body {
+      position: relative;
+      z-index: 2;
+      background: rgba(255,255,255,0.92);
+      border-bottom-left-radius: 1.5rem;
+      border-bottom-right-radius: 1.5rem;
+      padding-top: 1.2rem;
+    }
+    .service-card h5 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #1565c0;
+      margin-bottom: 0.5rem;
+    }
+    .service-quote {
+      font-size: 1.03rem;
+      color: #333;
+      font-style: italic;
+      margin-top: 0.5rem;
+    }
+    .booking-card {
+      border-radius: 1.5rem;
+      box-shadow: 0 4px 24px 0 rgba(21,101,192,0.07);
+      background: #fff;
+      padding: 2rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .booking-card h4 {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      color: #1565c0;
+      margin-bottom: 1.2rem;
+    }
+    .form-label {
+      font-weight: 600;
+      color: #1565c0;
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+    }
+    .form-control, .form-select {
+      border-radius: 1rem;
+    }
+    .form-control:invalid, .form-select:invalid {
+      border-color: #e53935;
+    }
+    .form-control:valid, .form-select:valid {
+      border-color: #43a047;
+    }
+    .input-error {
+      border-color: #e53935 !important;
+      box-shadow: 0 0 0 0.2rem rgba(229,57,53,0.07);
+    }
+    .error-msg {
+      color: #e53935;
+      font-size: 0.92rem;
+      margin-top: 2px;
+      margin-bottom: 0;
+    }
+    .modal-content {
+      border-radius: 1.2rem;
+    }
+    .ticket-card {
+      border-radius: 1.2rem;
+      box-shadow: 0 2px 12px 0 rgba(21,101,192,0.09);
+      margin-bottom: 1.2rem;
+      background: #fff;
+      font-size: 1.05rem;
+    }
+    .cancel-btn {
+      margin-top: 10px;
+    }
+    .feedback-modal .modal-content {
+      border-radius: 1.2rem;
+      padding: 1.5rem;
+    }
+    @media (max-width: 992px) {
+      .home-cards-row {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      .service-card {
+        min-height: 270px;
+      }
+    }
+    @media (max-width: 600px) {
+      .auth-card {
+        padding: 1.2rem 0.5rem;
+      }
+      .booking-card {
+        padding: 1rem 0.5rem;
+      }
+      .service-card img {
+        height: 110px;
+      }
+      .service-card {
+        min-height: 190px;
+      }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+<div class="center-viewport" id="authScreen">
+  <div class="auth-card">
+    <h3 class="text-center mb-4">Welcome to GCD Airways</h3>
+    <form id="loginForm">
+      <div class="mb-3">
+        <input type="email" id="loginEmail" class="form-control" placeholder="Email" required>
+      </div>
+      <div class="mb-3">
+        <input type="password" id="loginPassword" class="form-control" placeholder="Password" required>
+      </div>
+      <button class="btn btn-primary w-100 mb-2" type="submit">Login</button>
+      <div class="text-center">
+        <a href="#" id="showRegister">Don't have an account? Register</a>
+      </div>
+    </form>
+    <form id="registerForm" class="d-none">
+      <div class="mb-3">
+        <input type="email" id="registerEmail" class="form-control" placeholder="Email" required>
+      </div>
+      <div class="mb-3">
+        <input type="password" id="registerPassword" class="form-control" placeholder="Password" required>
+      </div>
+      <button class="btn btn-success w-100 mb-2" type="submit">Register</button>
+      <div class="text-center">
+        <a href="#" id="showLogin">Already have an account? Login</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="mainApp" class="d-none">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">GCD Airways</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+          <li class="nav-item">
+            <a class="nav-link active" href="#" id="navHome">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="navBook">Book Ticket</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="navTickets">Your Booked Tickets</a>
+          </li>
+          <li class="nav-item">
+            <span class="navbar-text text-white me-2" id="welcomeUser"></span>
+          </li>
+          <li class="nav-item">
+            <button class="btn btn-light" id="logoutBtn">Logout</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Home Section -->
+  <div id="homeSection" class="section active">
+    <div class="d-flex flex-row home-cards-row flex-wrap justify-content-between">
+      <div class="col-lg-4 col-md-6 mb-3 p-0">
+        <div class="service-card h-100">
+          <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80" alt="Our Services">
+          <div class="card-body">
+            <h5>Our Services</h5>
+            <div>World-class service and hospitality</div>
+            <div class="service-quote">"Fly the skies, feel the care."</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6 mb-3 p-0">
+        <div class="service-card h-100">
+          <img src="https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?auto=format&fit=crop&w=600&q=80" alt="Our Journey">
+          <div class="card-body">
+            <h5>Our Journey</h5>
+            <div>Connecting India with excellence</div>
+            <div class="service-quote">"Every journey is a new story in the sky."</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-12 mb-3 p-0">
+        <div class="service-card h-100">
+          <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80" alt="Special Offers">
+          <div class="card-body">
+            <h5>Special Offers</h5>
+            <div>Exciting discounts for frequent flyers</div>
+            <div class="service-quote">"Let your dreams take flight with our offers!"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-4 mb-5">
+      <h2 style="font-family: 'Montserrat',sans-serif; font-weight:700; color:#1565c0;">"The sky is not the limit, it's just the beginning."</h2>
+      <div style="font-size:1.2rem; color:#444;">Experience the joy of flying with GCD Airways.<br>Book your next adventure today!</div>
+    </div>
+  </div>
+
+  <!-- Book Ticket Section -->
+  <div id="bookSection" class="section">
+    <div class="booking-card mx-auto" style="max-width: 900px;">
+      <h4>Book Your Flight</h4>
+      <form id="flightSearchForm" class="row g-3 needs-validation" novalidate>
+        <div class="col-md-3">
+          <label for="departure" class="form-label">Departure</label>
+          <input list="airportList" id="departure" class="form-control" placeholder="Departure" required>
+        </div>
+        <div class="col-md-3">
+          <label for="destination" class="form-label">Destination</label>
+          <input list="airportList" id="destination" class="form-control" placeholder="Destination" required>
+        </div>
+        <datalist id="airportList"></datalist>
+        <div class="col-md-2">
+          <label for="passengers" class="form-label">No. of Passengers</label>
+          <input type="number" id="passengers" class="form-control" placeholder="No. of Passengers" min="1" max="8" value="1" required>
+        </div>
+        <div class="col-md-2">
+          <label for="travelDate" class="form-label">Travel Date</label>
+          <input type="date" id="travelDate" class="form-control" required>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button class="btn btn-primary w-100" type="submit">Search Flights</button>
+        </div>
+      </form>
+    </div>
+    <div id="resultsSection" class="mb-4 d-none">
+      <h5>Available Flights</h5>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Departure</th>
+            <th>Arrival</th>
+            <th>Stops</th>
+            <th>Economy</th>
+            <th>Business</th>
+            <th>Book</th>
+          </tr>
+        </thead>
+        <tbody id="flightsTable"></tbody>
+      </table>
+    </div>
+    <!-- Booking Details Modal -->
+    <div class="modal fade" id="bookingModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="passengerForm" novalidate>
+            <div class="modal-header">
+              <h5 class="modal-title">Enter Passenger Details</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="passengerInputs"></div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-success">Proceed to Payment</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- Payment Section -->
+    <div id="paymentSection" class="d-none card p-4 mb-4" style="max-width: 450px; margin:auto;">
+      <h5>Payment</h5>
+      <div class="mb-2">
+        <select id="paymentMethod" class="form-select">
+          <option value="card">Credit/Debit Card</option>
+          <option value="upi">UPI</option>
+        </select>
+      </div>
+      <div id="cardInputs" class="mb-2">
+        <input type="text" id="cardNumber" class="form-control mb-2" placeholder="Card Number">
+        <input type="text" id="cardName" class="form-control mb-2" placeholder="Name on Card">
+        <div class="row">
+          <div class="col-6">
+            <input type="text" id="cardExpiry" class="form-control mb-2" placeholder="MM/YY">
+          </div>
+          <div class="col-6">
+            <input type="text" id="cardCVV" class="form-control mb-2" placeholder="CVV">
+          </div>
+        </div>
+      </div>
+      <div id="upiInput" class="mb-2" style="display:none;">
+        <input type="text" id="upiId" class="form-control" placeholder="Enter UPI ID">
+      </div>
+      <button id="payBtn" class="btn btn-primary w-100">Pay</button>
+    </div>
+  </div>
+
+  <!-- Booked Tickets Section -->
+  <div id="ticketsSection" class="section">
+    <div class="booking-card mx-auto" style="max-width: 900px;">
+      <h4>Your Booked Tickets</h4>
+      <div id="bookingsList" class="row"></div>
+    </div>
+  </div>
+
+  <!-- Cancel Feedback Modal -->
+  <div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content feedback-modal">
+        <div class="modal-header">
+          <h5 class="modal-title">Cancel Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label for="cancelFeedback" class="form-label">Why are you cancelling?</label>
+          <textarea id="cancelFeedback" class="form-control" rows="3" required></textarea>
+          <div id="cancelFeedbackError" class="error-msg"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" id="confirmCancelBtn">Confirm Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS & Firebase SDKs -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+// Firebase imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+
+// --- CONFIGURE YOUR FIREBASE BELOW ---
+const firebaseConfig = {
+  apiKey: "AIzaSyBnrtX5rzyGtzfkqVuxhXEccmC1WxgUxsE",
+  authDomain: "flightticketbooking-35580.firebaseapp.com",
+  projectId: "flightticketbooking-35580",
+  storageBucket: "flightticketbooking-35580.appspot.com",
+  messagingSenderId: "828504592232",
+  appId: "1:828504592232:web:bec4c555c0e8d7fe4e10dd"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// --- UI Elements ---
+const authScreen = document.getElementById('authScreen');
+const mainApp = document.getElementById('mainApp');
+const welcomeUser = document.getElementById('welcomeUser');
+const logoutBtn = document.getElementById('logoutBtn');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const showRegister = document.getElementById('showRegister');
+const showLogin = document.getElementById('showLogin');
+const navHome = document.getElementById('navHome');
+const navBook = document.getElementById('navBook');
+const navTickets = document.getElementById('navTickets');
+const homeSection = document.getElementById('homeSection');
+const bookSection = document.getElementById('bookSection');
+const ticketsSection = document.getElementById('ticketsSection');
+
+// --- Payment Elements ---
+const paymentMethod = document.getElementById('paymentMethod');
+const cardInputs = document.getElementById('cardInputs');
+const upiInput = document.getElementById('upiInput');
+const upiId = document.getElementById('upiId');
+const cardNumber = document.getElementById('cardNumber');
+const cardName = document.getElementById('cardName');
+const cardExpiry = document.getElementById('cardExpiry');
+const cardCVV = document.getElementById('cardCVV');
+const payBtn = document.getElementById('payBtn');
+
+// --- Payment Fields Show/Hide Logic ---
+function updatePaymentFields() {
+  if (paymentMethod.value === "card") {
+    cardInputs.style.display = "";
+    upiInput.style.display = "none";
+  } else {
+    cardInputs.style.display = "none";
+    upiInput.style.display = "";
+  }
+}
+paymentMethod.onchange = updatePaymentFields;
+updatePaymentFields();
+
+// --- Auth Handlers ---
+showRegister.onclick = () => { loginForm.classList.add('d-none'); registerForm.classList.remove('d-none'); }
+showLogin.onclick = () => { registerForm.classList.add('d-none'); loginForm.classList.remove('d-none'); }
+loginForm.onsubmit = async (e) => {
+  e.preventDefault();
+  try {
+    await signInWithEmailAndPassword(auth, loginForm.loginEmail.value, loginForm.loginPassword.value);
+  } catch (err) { alert(err.message); }
+};
+registerForm.onsubmit = async (e) => {
+  e.preventDefault();
+  try {
+    await createUserWithEmailAndPassword(auth, registerForm.registerEmail.value, registerForm.registerPassword.value);
+    alert("Account created! Please login.");
+    showLogin.click();
+  } catch (err) { alert(err.message); }
+};
+logoutBtn.onclick = () => signOut(auth);
+
+// --- Auth State ---
+auth.onAuthStateChanged(user => {
+  if (user) {
+    authScreen.classList.add('d-none');
+    mainApp.classList.remove('d-none');
+    welcomeUser.textContent = `Welcome, ${user.email}`;
+    loadBookings();
+  } else {
+    mainApp.classList.add('d-none');
+    authScreen.classList.remove('d-none');
+    loginForm.reset(); registerForm.reset();
+  }
+});
+
+// --- Navbar Section Switch ---
+navHome.onclick = (e) => {
+  e.preventDefault();
+  setActiveSection('home');
+};
+navBook.onclick = (e) => {
+  e.preventDefault();
+  setActiveSection('book');
+};
+navTickets.onclick = (e) => {
+  e.preventDefault();
+  setActiveSection('tickets');
+  loadBookings();
+};
+
+function setActiveSection(section) {
+  navHome.classList.remove('active');
+  navBook.classList.remove('active');
+  navTickets.classList.remove('active');
+  homeSection.classList.remove('active');
+  bookSection.classList.remove('active');
+  ticketsSection.classList.remove('active');
+  if (section === 'home') {
+    navHome.classList.add('active');
+    homeSection.classList.add('active');
+  } else if (section === 'book') {
+    navBook.classList.add('active');
+    bookSection.classList.add('active');
+  } else if (section === 'tickets') {
+    navTickets.classList.add('active');
+    ticketsSection.classList.add('active');
+  }
+}
+
+// --- Airport Autocomplete (static for demo) ---
+const airports = [
+  "Chennai (MAA)", "Mumbai (BOM)", "Kolkata (CCU)", "Delhi (DEL)",
+  "Bengaluru (BLR)", "Hyderabad (HYD)", "Ahmedabad (AMD)", "New York (JFK)", "Bhopal (BHO)"
+];
+const airportList = document.getElementById('airportList');
+airports.forEach(a => {
+  let opt = document.createElement('option');
+  opt.value = a;
+  airportList.appendChild(opt);
+});
+
+// --- Flight Search & Results ---
+const flightSearchForm = document.getElementById('flightSearchForm');
+const resultsSection = document.getElementById('resultsSection');
+const flightsTable = document.getElementById('flightsTable');
+let selectedFlight = null, bookingPassengers = 1, bookingClass = "Economy", bookingDetails = {}, bookingAmount = 0;
+
+flightSearchForm.onsubmit = (e) => {
+  e.preventDefault();
+  if (!flightSearchForm.checkValidity()) { flightSearchForm.classList.add('was-validated'); return; }
+  const dep = flightSearchForm.departure.value, dest = flightSearchForm.destination.value;
+  bookingPassengers = parseInt(flightSearchForm.passengers.value);
+  const date = flightSearchForm.travelDate.value;
+  if (dep === dest) return alert("Departure and Destination cannot be same!");
+
+  // Demo: 3 route options with different stops and prices
+  let routes = [];
+  if ((dep.includes("Chennai") && dest.includes("New York")) || (dep.includes("New York") && dest.includes("Chennai"))) {
+    routes = [
+      { route: `${dep} → Delhi → ${dest}`, departure: "09:00", arrival: "22:00", stops: 1, economy: 25000, business: 42000 },
+      { route: `${dep} → Mumbai → London → ${dest}`, departure: "06:00", arrival: "23:30", stops: 2, economy: 27000, business: 44000 },
+      { route: `${dep} → ${dest}`, departure: "21:00", arrival: "09:00+1", stops: 0, economy: 30000, business: 50000 }
+    ];
+  } else if ((dep.includes("Chennai") && dest.includes("Kolkata")) || (dep.includes("Kolkata") && dest.includes("Chennai"))) {
+    routes = [
+      { route: `${dep} → Bhopal → ${dest}`, departure: "10:00", arrival: "14:30", stops: 1, economy: 5500, business: 9000 },
+      { route: `${dep} → Mumbai → ${dest}`, departure: "08:00", arrival: "13:00", stops: 1, economy: 5700, business: 9500 },
+      { route: `${dep} → ${dest}`, departure: "19:00", arrival: "22:00", stops: 0, economy: 7000, business: 12000 }
+    ];
+  } else {
+    routes = [
+      { route: `${dep} → Mumbai → ${dest}`, departure: "09:00", arrival: "14:00", stops: 1, economy: 3500, business: 6500 },
+      { route: `${dep} → ${dest}`, departure: "13:00", arrival: "16:00", stops: 0, economy: 4000, business: 7000 },
+      { route: `${dep} → Delhi → ${dest}`, departure: "17:00", arrival: "22:00", stops: 1, economy: 3800, business: 6700 }
+    ];
+  }
+
+  flightsTable.innerHTML = "";
+  routes.forEach(f => {
+    let tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${f.route}</td>
+      <td>${f.departure}</td>
+      <td>${f.arrival}</td>
+      <td>${f.stops}</td>
+      <td>₹${f.economy}</td>
+      <td>₹${f.business}</td>
+      <td>
+        <button class="btn btn-sm btn-success" data-class="Economy" data-amount="${f.economy}">Book Economy</button>
+        <button class="btn btn-sm btn-info ms-1" data-class="Business" data-amount="${f.business}">Book Business</button>
+      </td>
+    `;
+    tr.querySelectorAll('button').forEach(btn => {
+      btn.onclick = () => {
+  selectedFlight = f;
+  bookingClass = btn.getAttribute('data-class');
+  // Always read the current value of the "No. of Passengers" input:
+  bookingPassengers = parseInt(document.getElementById('passengers').value) || 1;
+  bookingAmount = parseInt(btn.getAttribute('data-amount')) * bookingPassengers;
+  showPassengerModal();
+};
+    });
+    flightsTable.appendChild(tr);
+  });
+  resultsSection.classList.remove('d-none');
+};
+
+// --- Passenger Modal & Payment ---
+const bookingModal = new bootstrap.Modal(document.getElementById('bookingModal'));
+const passengerForm = document.getElementById('passengerForm');
+const passengerInputs = document.getElementById('passengerInputs');
+const paymentSection = document.getElementById('paymentSection');
+let passengerDetails = [];
+
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email.trim());
+}
+
+function showPassengerModal() {
+  passengerInputs.innerHTML = "";
+  passengerDetails = [];
+  for (let i = 1; i <= bookingPassengers; i++) {
+    passengerInputs.innerHTML += `
+      <div class="mb-2 passenger-block">
+        <label class="form-label">Passenger ${i} Name</label>
+        <input type="text" class="form-control mb-1 passenger-name" placeholder="Name" required>
+        <label class="form-label">Date of Birth</label>
+        <input type="date" class="form-control mb-1 passenger-dob" placeholder="DOB" required>
+        <label class="form-label">Age</label>
+        <input type="number" class="form-control mb-1 passenger-age" placeholder="Age" min="1" max="100" required>
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control mb-1 passenger-email" placeholder="Passenger Email" required>
+        <div class="error-msg passenger-email-err"></div>
+      </div>
+    `;
+  }
+  bookingModal.show();
+}
+
+passengerForm.onsubmit = (e) => {
+  e.preventDefault();
+  let valid = true;
+  passengerDetails = [];
+  passengerInputs.querySelectorAll('.passenger-block').forEach((div, idx) => {
+    const name = div.querySelector('.passenger-name').value.trim();
+    const dob = div.querySelector('.passenger-dob').value.trim();
+    const age = div.querySelector('.passenger-age').value.trim();
+    const email = div.querySelector('.passenger-email').value.trim();
+    const emailErr = div.querySelector('.passenger-email-err');
+    if (!name || !dob || !age || !email || !validateEmail(email)) {
+      valid = false;
+      if (!validateEmail(email)) {
+        emailErr.textContent = "Enter a valid email address";
+        div.querySelector('.passenger-email').classList.add('input-error');
+      } else {
+        emailErr.textContent = "";
+        div.querySelector('.passenger-email').classList.remove('input-error');
+      }
+    } else {
+      emailErr.textContent = "";
+      div.querySelector('.passenger-email').classList.remove('input-error');
+    }
+    passengerDetails.push({ name, dob, age, email });
+  });
+  if (!valid) return;
+  bookingModal.hide();
+  paymentSection.classList.remove('d-none');
+  payBtn.textContent = `Pay ₹${bookingAmount}`;
+};
+
+// --- Email Sending Function ---
+async function sendTicketEmail(email, ticketDetails) {
+  try {
+    const response = await fetch('https://flight2backend.onrender.com/send-ticket', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, ticket: ticketDetails })
+    });
+    const data = await response.json();
+    if (data.success) {
+      alert('Ticket sent to ' + email);
+    } else {
+      alert('Failed to send ticket: ' + data.message);
+    }
+  } catch (err) {
+    alert('Error sending ticket: ' + err.message);
+  }
+}
+
+// --- Payment & Booking ---
+payBtn.onclick = async () => {
+  if (paymentMethod.value === "upi") {
+    if (!upiId.value.trim()) {
+      upiId.classList.add('input-error');
+      return alert("Enter UPI ID!");
+    } else {
+      upiId.classList.remove('input-error');
+    }
+  } else {
+    if (!cardNumber.value.trim() || !cardName.value.trim() || !cardExpiry.value.trim() || !cardCVV.value.trim()) {
+      [cardNumber, cardName, cardExpiry, cardCVV].forEach(f => {
+        if (!f.value.trim()) f.classList.add('input-error'); else f.classList.remove('input-error');
+      });
+      return alert("Enter all card details!");
+    }
+    [cardNumber, cardName, cardExpiry, cardCVV].forEach(f => f.classList.remove('input-error'));
+  }
+  const bookingId = "GCD" + Math.floor(100000 + Math.random() * 900000);
+  await addDoc(collection(db, "bookings"), {
+    user: auth.currentUser.email,
+    flight: selectedFlight,
+    date: flightSearchForm.travelDate.value,
+    class: bookingClass,
+    passengers: bookingPassengers,
+    bookingId: bookingId,
+    status: "Booked",
+    amount: bookingAmount,
+    passengerDetails: passengerDetails
+  });
+
+  // Send ticket email to each passenger email
+  for (const p of passengerDetails) {
+    const ticketDetails = `
+Ticket ID: ${bookingId}
+Passenger Name: ${p.name}
+Date of Birth: ${p.dob}
+Age: ${p.age}
+Route: ${selectedFlight.route}
+Date: ${flightSearchForm.travelDate.value}
+Class: ${bookingClass}
+Passengers: ${bookingPassengers}
+Amount Paid: ₹${bookingAmount}
+Status: Booked
+`;
+    await sendTicketEmail(p.email, ticketDetails);
+  }
+
+  paymentSection.classList.add('d-none');
+  alert("Booking Confirmed!");
+  loadBookings();
+  setActiveSection('tickets');
+};
+
+// --- Booked Tickets ---
+const bookingsList = document.getElementById('bookingsList');
+let currentBookings = [];
+async function loadBookings() {
+  bookingsList.innerHTML = "";
+  const q = query(collection(db, "bookings"), where("user", "==", auth.currentUser.email));
+  const snap = await getDocs(q);
+  currentBookings = [];
+  if (snap.empty) {
+    bookingsList.innerHTML = `<div class="text-center text-muted">No tickets booked yet.</div>`;
+    return;
+  }
+  snap.forEach(docSnap => {
+    const b = docSnap.data();
+    currentBookings.push({ ...b, docId: docSnap.id });
+  });
+  // Remove duplicates based on bookingId
+  const uniqueBookings = [];
+  const seen = new Set();
+  for (const b of currentBookings) {
+    if (!seen.has(b.bookingId)) {
+      seen.add(b.bookingId);
+      uniqueBookings.push(b);
+    }
+  }
+  uniqueBookings.forEach(b => {
+    const div = document.createElement('div');
+    div.className = "col-md-6";
+    div.innerHTML = `
+      <div class="ticket-card p-3 mb-3">
+        <div><b>Ticket ID:</b> ${b.bookingId}</div>
+        <div><b>Route:</b> ${b.flight.route}</div>
+        <div><b>Date:</b> ${b.date}</div>
+        <div><b>Class:</b> ${b.class}</div>
+        <div><b>Passengers:</b> ${b.passengers}</div>
+        <div><b>Amount Paid:</b> ₹${b.amount}</div>
+        <div><b>Status:</b> ${b.status}</div>
+        <button class="btn btn-sm btn-danger cancel-btn" data-docid="${b.docId}">Cancel</button>
+      </div>
+    `;
+    bookingsList.appendChild(div);
+    div.querySelector('.cancel-btn').onclick = () => showCancelModal(b.docId);
+  });
+}
+
+// --- Cancel Ticket Feedback Modal ---
+const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+const cancelFeedback = document.getElementById('cancelFeedback');
+const cancelFeedbackError = document.getElementById('cancelFeedbackError');
+const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+let cancelDocId = null;
+
+function showCancelModal(docId) {
+  cancelDocId = docId;
+  cancelFeedback.value = "";
+  cancelFeedbackError.textContent = "";
+  cancelModal.show();
+}
+
+confirmCancelBtn.onclick = async () => {
+  if (!cancelFeedback.value.trim()) {
+    cancelFeedbackError.textContent = "Please provide a reason for cancellation.";
+    return;
+  }
+  cancelFeedbackError.textContent = "";
+  // Remove booking
+  await deleteDoc(doc(db, "bookings", cancelDocId));
+  cancelModal.hide();
+  alert("Ticket cancelled. Feedback: " + cancelFeedback.value);
+  loadBookings();
+};
+</script>
+</body>
+</html>
