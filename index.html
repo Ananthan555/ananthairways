@@ -233,29 +233,33 @@
 <div id="mainApp" class="d-none">
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">GCD Airways</a>
-      <div class="collapse navbar-collapse">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-          <li class="nav-item">
-            <a class="nav-link active" href="#" id="navHome">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" id="navBook">Book Ticket</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" id="navTickets">Your Booked Tickets</a>
-          </li>
-          <li class="nav-item">
-            <span class="navbar-text text-white me-2" id="welcomeUser"></span>
-          </li>
-          <li class="nav-item">
-            <button class="btn btn-light" id="logoutBtn">Logout</button>
-          </li>
-        </ul>
-      </div>
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">GCD Airways</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+        <li class="nav-item">
+          <a class="nav-link active" href="#" id="navHome">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" id="navBook">Book Ticket</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" id="navTickets">Your Booked Tickets</a>
+        </li>
+        <li class="nav-item">
+          <span class="navbar-text text-white me-2" id="welcomeUser"></span>
+        </li>
+        <li class="nav-item">
+          <button class="btn btn-light" id="logoutBtn">Logout</button>
+        </li>
+      </ul>
     </div>
-  </nav>
+  </div>
+</nav>
+
 
   <!-- Home Section -->
   <div id="homeSection" class="section active">
