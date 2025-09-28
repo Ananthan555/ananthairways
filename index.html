@@ -514,6 +514,32 @@
       </div>
     </div>
 
+
+  <!-- Ticket Confirmation Modal -->
+<div class="modal fade" id="ticketConfirmationModal" tabindex="-1" aria-labelledby="ticketConfirmationLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="ticketConfirmationLabel">Booking Confirmation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        Your ticket has been booked successfully!
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
     <!-- Booked Tickets Section -->
     <div id="ticketsSection" class="section">
       <div class="booking-card mx-auto" style="max-width: 900px">
@@ -958,133 +984,162 @@ import {
       return re.test(email.trim());
     }
 
-    function showPassengerModal() {
-      passengerInputs.innerHTML = "";
-      passengerDetails = [];
-      for (let i = 1; i <= bookingPassengers; i++) {
-        passengerInputs.innerHTML += `
- <div class="mb-2 passenger-block">
-          <label class="form-label">Passenger ${i} Name</label>
-          <input type="text" class="form-control mb-1 passenger-name" placeholder="Name" required />
-          <label class="form-label">Date of Birth</label>
-          <input type="date" class="form-control mb-1 passenger-dob" placeholder="DOB" required />
-          <label class="form-label">Age</label>
-          <input type="number" class="form-control mb-1 passenger-age" placeholder="Age" min="1" max="100" required />
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control mb-1 passenger-email" placeholder="Passenger Email" required />
-          <div class="error-msg passenger-email-err"></div>
-        </div>
-      `;
-      }
-      bookingModal.show();
-    }
+   function showPassengerModal() {
+  passengerInputs.innerHTML = "";
+  passengerDetails = [];
+  for (let i = 1; i <= bookingPassengers; i++) {
+    passengerInputs.innerHTML += `
+      <div class="mb-2 passenger-block">
+        <label class="form-label">Passenger ${i} Name</label>
+        <input type="text" class="form-control mb-1 passenger-name" placeholder="Name" required>
 
-    passengerForm.onsubmit = (e) => {
-      e.preventDefault();
-      let valid = true;
-      passengerDetails = [];
-      passengerInputs.querySelectorAll(".passenger-block").forEach((div) => {
-        const name = div.querySelector(".passenger-name").value.trim();
-        const dob = div.querySelector(".passenger-dob").value.trim();
-        const age = div.querySelector(".passenger-age").value.trim();
-        const email = div.querySelector(".passenger-email").value.trim();
-        const emailErr = div.querySelector(".passenger-email-err");
-        if (!name || !dob || !age || !email || !validateEmail(email)) {
-          valid = false;
-          if (!validateEmail(email)) {
-            emailErr.textContent = "Enter a valid email address";
-            div.querySelector(".passenger-email").classList.add("input-error");
-          } else {
-            emailErr.textContent = "";
-            div.querySelector(".passenger-email").classList.remove("input-error");
-          }
-        } else {
-          emailErr.textContent = "";
-          div.querySelector(".passenger-email").classList.remove("input-error");
-        }
-        passengerDetails.push({ name, dob, age, email });
-      });
-      if (!valid) return;
-      bookingModal.hide();
-      paymentSection.classList.remove("d-none");
-      payBtn.textContent = `Pay ₹${bookingAmount}`;
-    };
+        <label class="form-label">Date of Birth</label>
+        <input type="date" class="form-control mb-1 passenger-dob" placeholder="DOB" required>
 
-    // Email sending
-    async function sendTicketEmail(email, ticketDetails) {
-      try {
-        const response = await fetch("https://flight2backend.onrender.com/send-ticket", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, ticket: ticketDetails }),
-        });
-        const data = await response.json();
-        if (data.success) {
-          alert("Ticket sent to " + email);
-        } else {
-          alert("Failed to send ticket: " + data.message);
-        }
-      } catch (err) {
-        alert("Error sending ticket: " + err.message);
-      }
-    }
+        <label class="form-label">Age</label>
+        <input type="number" class="form-control mb-1 passenger-age" placeholder="Age" min="1" max="100" readonly>
 
-    payBtn.onclick = async () => {
-      if (paymentMethod.value === "upi") {
-        if (!upiId.value.trim()) {
-          upiId.classList.add("input-error");
-          return alert("Enter UPI ID!");
+        <div class="passenger-mobile-group">
+          <label class="form-label">Mobile Number</label>
+          <input type="text" class="form-control mb-1 passenger-mobile" placeholder="Mobile Number" pattern="[0-9]{10}">
+          <div class="error-msg passenger-mobile-err"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Add DOB change listeners for age calculation and mobile field toggle
+  passengerInputs.querySelectorAll('.passenger-dob').forEach((dobInput, idx) => {
+    dobInput.addEventListener('change', () => {
+      const dobValue = dobInput.value;
+      const ageInput = passengerInputs.querySelectorAll('.passenger-age')[idx];
+      const mobileGroup = passengerInputs.querySelectorAll('.passenger-mobile-group')[idx];
+      if (dobValue) {
+        const age = calculateAge(new Date(dobValue));
+        ageInput.value = age;
+
+        // Show mobile number input only if age >= 18
+        if (age >= 18) {
+          mobileGroup.style.display = "block";
+          mobileGroup.querySelector('.passenger-mobile').required = true;
         } else {
-          upiId.classList.remove("input-error");
+          mobileGroup.style.display = "none";
+          mobileGroup.querySelector('.passenger-mobile').required = false;
+          mobileGroup.querySelector('.passenger-mobile').value = "";
+          mobileGroup.querySelector('.passenger-mobile-err').textContent = "";
         }
       } else {
-        if (
-          !cardNumber.value.trim() ||
-          !cardName.value.trim() ||
-          !cardExpiry.value.trim() ||
-          !cardCVV.value.trim()
-        ) {
-          [cardNumber, cardName, cardExpiry, cardCVV].forEach((f) => {
-            if (!f.value.trim()) f.classList.add("input-error");
-            else f.classList.remove("input-error");
-          });
-          return alert("Enter all card details!");
-        }
-        [cardNumber, cardName, cardExpiry, cardCVV].forEach((f) => f.classList.remove("input-error"));
+        ageInput.value = "";
+        mobileGroup.style.display = "none";
       }
-      const bookingId = "GCD" + Math.floor(100000 + Math.random() * 900000);
-      await addDoc(collection(db, "bookings"), {
-        user: auth.currentUser.email,
-        flight: selectedFlight,
-        date: flightSearchForm.travelDate.value,
-        class: bookingClass,
-        passengers: bookingPassengers,
-        bookingId: bookingId,
-        status: "Booked",
-        amount: bookingAmount,
-        passengerDetails: passengerDetails,
-      });
+    });
 
-      for (const p of passengerDetails) {
-        const ticketDetails = `
-Ticket ID: ${bookingId}
-Passenger Name: ${p.name}
-Date of Birth: ${p.dob}
-Age: ${p.age}
-Route: ${selectedFlight.route}
-Date: ${flightSearchForm.travelDate.value}
-Class: ${bookingClass}
-Passengers: ${bookingPassengers}
-Amount Paid: ₹${bookingAmount}
-Status: Booked
-`;
-        await sendTicketEmail(p.email, ticketDetails);
+    // Initially hide mobile group until DOB input
+    passengerInputs.querySelectorAll('.passenger-mobile-group')[idx].style.display = "none";
+  });
+
+  bookingModal.show();
+
+  passengerForm.onsubmit = (e) => {
+    e.preventDefault();
+    let valid = true;
+    passengerDetails = [];
+    passengerInputs.querySelectorAll(".passenger-block").forEach((div) => {
+      const name = div.querySelector(".passenger-name").value.trim();
+      const dob = div.querySelector(".passenger-dob").value.trim();
+      const age = div.querySelector(".passenger-age").value.trim();
+      const mobileGroup = div.querySelector(".passenger-mobile-group");
+      const mobileInput = div.querySelector(".passenger-mobile");
+      const mobileErr = div.querySelector(".passenger-mobile-err");
+
+      // If mobile input is visible (age >= 18), validate mobile number
+      if (mobileGroup.style.display !== "none") {
+        if (!mobileInput.value.trim() || !/^[0-9]{10}$/.test(mobileInput.value.trim())) {
+          valid = false;
+          mobileErr.textContent = "Enter a valid 10-digit mobile number";
+          mobileInput.classList.add("input-error");
+        } else {
+          mobileErr.textContent = "";
+          mobileInput.classList.remove("input-error");
+        }
+      } else {
+        // No mobile required for age < 18
+        mobileErr.textContent = "";
+        mobileInput.classList.remove("input-error");
       }
-      paymentSection.classList.add("d-none");
-      alert("Booking Confirmed!");
-      loadBookings();
-      setActiveSection("tickets");
-    };
+
+      if (!name || !dob || !age) valid = false;
+
+      passengerDetails.push({
+        name,
+        dob,
+        age,
+        mobile: mobileInput.value.trim() || null,
+      });
+    });
+
+    if (!valid) return;
+    bookingModal.hide();
+    paymentSection.classList.remove("d-none");
+    payBtn.textContent = `Pay ₹${bookingAmount}`;
+  };
+}
+
+function calculateAge(dob) {
+  const diffMs = Date.now() - dob.getTime();
+  const ageDt = new Date(diffMs);
+  return Math.abs(ageDt.getUTCFullYear() - 1970);
+}
+
+    // Email sending
+//const BACKEND_URL = "https://flight2backend.onrender.com";
+
+//async function sendTicketEmail(email, ticketDetails) {
+ // try {
+  //  const response = await fetch(`${BACKEND_URL}/send-ticket`, {
+   //   method: "POST",
+   //   headers: { "Content-Type": "application/json" },
+   //   body: JSON.stringify({ email, ticket: ticketDetails }),
+   // });
+   // const data = await response.json();
+   // if (data.success) {
+   //   alert("Ticket sent to " + email);
+   // } else {
+   //   alert("Failed to send ticket: " + data.message);
+   // }
+ // }// catch (err) {
+ //   alert("Error sending ticket: " + err.message);
+ // }
+//}
+
+
+    // Initialize modal object (place at top or where you initialize UI elements)
+const ticketConfirmationModal = new bootstrap.Modal(document.getElementById('ticketConfirmationModal'));
+
+payBtn.onclick = async () => {
+  // your existing payment validation code here...
+
+  // Booking process (save booking, etc.)
+  const bookingId = "GCD" + Math.floor(100000 + Math.random() * 900000);
+  await addDoc(collection(db, "bookings"), {
+    user: auth.currentUser.email,
+    flight: selectedFlight,
+    date: flightSearchForm.travelDate.value,
+    class: bookingClass,
+    passengers: bookingPassengers,
+    bookingId: bookingId,
+    status: "Booked",
+    amount: bookingAmount,
+    passengerDetails: passengerDetails,
+  });
+
+  // Show confirmation modal popup to user
+  ticketConfirmationModal.show();
+
+  // Optionally reload bookings list or switch visible section
+  loadBookings();
+  setActiveSection("tickets");
+};
 
     // Load bookings for current user
     const bookingsList = document.getElementById("bookingsList");
