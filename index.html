@@ -6,7 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  
   <style>
+
+     .download-btn {
+      margin-left: 10px;
+      margin-top: 10px;
+    }
     #passengerInputs .form-label {
   text-align: left;
   display: block;
@@ -807,36 +814,45 @@ import {
     };
 
     // User register
-    registerForm.onsubmit = async (e) => {
-      e.preventDefault();
-      try {
-        await createUserWithEmailAndPassword(auth, registerForm.registerEmail.value, registerForm.registerPassword.value);
-        alert("Account created! Please login.");
-        showLogin.click();
-      } catch (err) {
-        alert(err.message);
-      }
-    };
+     registerForm.onsubmit = async (e) => {
+  e.preventDefault();
+  try {
+    await createUserWithEmailAndPassword(
+      auth,
+      registerForm.registerEmail.value,
+      registerForm.registerPassword.value
+    );
+    alert("Account created! Please login."); // Notify user
+    signOut(auth); // Ensure the newly created user is signed out
+    // Show login form (not logged in)
+    registerForm.classList.add("d-none");
+    loginForm.classList.remove("d-none");
+    // Optionally clear form fields
+    registerForm.reset();
+  } catch (err) {
+    alert(err.message);
+  }
+};
 
     // User logout
     logoutBtn.onclick = () => signOut(auth);
 
     // User auth state change
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        if (loggedInAdmin) return; // avoid conflict when admin logged in
-        authScreen.classList.add("d-none");
-        mainApp.classList.remove("d-none");
-        welcomeUser.textContent = `Welcome, ${user.email}`;
-        setActiveSection("home");
-        loadBookings();
-      } else {
-        mainApp.classList.add("d-none");
-        authScreen.classList.remove("d-none");
-        loginForm.reset();
-        registerForm.reset();
-      }
-    });
+  if (user) {
+    if (loggedInAdmin) return; // avoid conflict when admin logged in
+    authScreen.classList.add("d-none");
+    mainApp.classList.remove("d-none");
+    welcomeUser.textContent = `Welcome, ${user.email}`;
+    setActiveSection("home");
+    loadBookings(); // loads only current user's bookings based on auth.currentUser.email
+  } else {
+    mainApp.classList.add("d-none");
+    authScreen.classList.remove("d-none");
+    loginForm.reset();
+    registerForm.reset();
+  }
+});
 
     // User nav section toggles
     navHome.onclick = (e) => {
@@ -1141,23 +1157,63 @@ payBtn.onclick = async () => {
   setActiveSection("tickets");
 };
 
+
+
+
+    function downloadTicketAsPDF(ticket) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text("GCD Airways - Flight Ticket", 70, 15);
+
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+
+      doc.text(`Ticket ID: ${ticket.bookingId}`, 14, 30);
+      doc.text(`Route: ${ticket.flight.route}`, 14, 40);
+      doc.text(`Date: ${ticket.date}`, 14, 50);
+      doc.text(`Class: ${ticket.class}`, 14, 60);
+      doc.text(`No. of Passengers: ${ticket.passengers}`, 14, 70);
+      doc.text(`Amount Paid: ₹${ticket.amount}`, 14, 80);
+      doc.text(`Status: ${ticket.status}`, 14, 90);
+
+      doc.text("Passenger Details:", 14, 105);
+      let y = 115;
+      ticket.passengerDetails.forEach((p, i) => {
+        doc.text(`${i+1}. Name: ${p.name} | Age: ${p.age} | DOB: ${p.dob} ${p.mobile ? "| Mobile: "+p.mobile : ""}`, 14, y);
+        y += 8;
+      });
+
+      doc.setFontSize(10);
+      doc.text("Thank you for choosing GCD Airways.", 14, y+10);
+      doc.save(`GCD_Ticket_${ticket.bookingId}.pdf`);
+    }
+
+
     // Load bookings for current user
     const bookingsList = document.getElementById("bookingsList");
     let currentBookings = [];
 
-    async function loadBookings() {
+     async function loadBookings() {
+      const bookingsList = document.getElementById('bookingsList');
       bookingsList.innerHTML = "";
+
       const q = query(collection(db, "bookings"), where("user", "==", auth.currentUser.email));
       const snap = await getDocs(q);
-      currentBookings = [];
+
+      let currentBookings = [];
       if (snap.empty) {
-        bookingsList.innerHTML = `<div class="text-center text-muted">No tickets booked yet.</div>`;
+        bookingsList.innerHTML = '<div class="text-center text-muted">No tickets booked yet.</div>';
         return;
       }
-      snap.forEach((docSnap) => {
+      snap.forEach(docSnap => {
         const b = docSnap.data();
         currentBookings.push({ ...b, docId: docSnap.id });
       });
+
+      // Filter unique bookings by bookingId
       const uniqueBookings = [];
       const seen = new Set();
       for (const b of currentBookings) {
@@ -1166,26 +1222,31 @@ payBtn.onclick = async () => {
           uniqueBookings.push(b);
         }
       }
-      uniqueBookings.forEach((b) => {
-        const div = document.createElement("div");
+
+      uniqueBookings.forEach(b => {
+        const div = document.createElement('div');
         div.className = "col-md-6";
         div.innerHTML = `
-        <div class="ticket-card p-3 mb-3">
-          <div><b>Ticket ID:</b> ${b.bookingId}</div>
-          <div><b>Route:</b> ${b.flight.route}</div>
-          <div><b>Date:</b> ${b.date}</div>
-          <div><b>Class:</b> ${b.class}</div>
-          <div><b>Passengers:</b> ${b.passengers}</div>
-          <div><b>Amount Paid:</b> ₹${b.amount}</div>
-          <div><b>Status:</b> ${b.status}</div>
-          <button class="btn btn-sm btn-danger cancel-btn" data-docid="${b.docId}">Cancel</button>
-        </div>
-      `;
+          <div class="ticket-card p-3 mb-3">
+            <div><b>Ticket ID:</b> ${b.bookingId}</div>
+            <div><b>Route:</b> ${b.flight.route}</div>
+            <div><b>Date:</b> ${b.date}</div>
+            <div><b>Class:</b> ${b.class}</div>
+            <div><b>Passengers:</b> ${b.passengers}</div>
+            <div><b>Amount Paid:</b> ₹${b.amount}</div>
+            <div><b>Status:</b> ${b.status}</div>
+            <button class="btn btn-sm btn-danger cancel-btn" data-docid="${b.docId}">Cancel</button>
+            <button class="btn btn-sm btn-secondary download-btn" data-docid="${b.docId}">Download Ticket</button>
+          </div>
+        `;
         bookingsList.appendChild(div);
-        div.querySelector(".cancel-btn").onclick = () => showCancelModal(b.docId);
+
+        // Add cancel handler (existing)
+        div.querySelector('.cancel-btn').onclick = () => showCancelModal(b.docId);
+        // --- NEW: Add download handler ---
+        div.querySelector('.download-btn').onclick = () => downloadTicketAsPDF(b);
       });
     }
-
     //Cancel feedback modal
   const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
     const cancelReason = document.getElementById('cancelReason');
@@ -1388,25 +1449,57 @@ payBtn.onclick = async () => {
       }
     }
 
-    async function loadAdminBookings() {
-      adminBookingsTable.innerHTML = `<div class="text-center text-muted">Loading bookings...</div>`;
-      const snap = await getDocs(collection(db, "bookings"));
-      if (snap.empty) {
-        adminBookingsTable.innerHTML = `<div class="text-center text-muted">No tickets booked.</div>`;
-        return;
-      }
-      let html = "<table class='table table-bordered'><thead><tr><th>Ticket ID</th><th>Passenger</th><th>Email</th><th>Route</th><th>Date</th><th>Class</th><th>Amount</th><th>Status</th><th>User</th></tr></thead><tbody>";
-      snap.forEach((docSnap) => {
-        const b = docSnap.data();
-        if (Array.isArray(b.passengerDetails)) {
-          b.passengerDetails.forEach((p) => {
-            html += `<tr><td>${b.bookingId}</td><td>${p.name}</td><td>${p.email}</td><td>${b.flight.route}</td><td>${b.date}</td><td>${b.class}</td><td>₹${b.amount}</td><td>${b.status}</td><td>${b.user}</td></tr>`;
-          });
-        }
+ async function loadAdminBookings() {
+  adminBookingsTable.innerHTML = '<div class="text-center text-muted">Loading bookings...</div>';
+  const snap = await getDocs(collection(db, 'bookings'));
+  if (snap.empty) {
+    adminBookingsTable.innerHTML = '<div class="text-center text-muted">No tickets booked.</div>';
+    return;
+  }
+  let html = `
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Ticket ID</th>
+          <th>Passenger</th>
+          <th>Age</th>
+          <th>DOB</th>
+          <th>Mobile</th>
+          <th>Email</th>
+          <th>Route</th>
+          <th>Date</th>
+          <th>Class</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  snap.forEach(docSnap => {
+    const b = docSnap.data();
+    if (Array.isArray(b.passengerDetails)) {
+      b.passengerDetails.forEach(p => {
+        html += `
+          <tr>
+            <td>${b.bookingId}</td>
+            <td>${p.name}</td>
+            <td>${p.age ? p.age : '-'}</td>
+            <td>${p.dob ? p.dob : '-'}</td>
+            <td>${p.mobile ? p.mobile : '-'}</td>
+            <td>${b.user}</td>
+            <td>${b.flight.route}</td>
+            <td>${b.date}</td>
+            <td>${b.class}</td>
+            <td>₹${b.amount}</td>
+            <td>${b.status}</td>
+          </tr>
+        `;
       });
-      html += "</tbody></table>";
-      adminBookingsTable.innerHTML = html;
     }
+  });
+  html += `</tbody></table>`;
+  adminBookingsTable.innerHTML = html;
+}
 
     adminAddFlightForm.onsubmit = async (e) => {
       e.preventDefault();
